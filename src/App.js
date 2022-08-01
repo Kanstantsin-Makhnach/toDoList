@@ -1,36 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
-import classNames from 'classnames';
 import Task from './Task';
 import Input from './Input';
 import Edittask from './Edittask';
+import Login from './Login';
 
 function App() {
-  const [taskList, setTaskList] = useState([
-      {
-        id: 'aasds',
-        text: 'learn html',
-        done: false,
-        isEditing: false},
-      {
-        id: 'asdasdasd',
-        text: 'learn css',
-        done: false,
-        isEditing: false},
-      {
-        id:'asdvxvxc',
-        text: 'learn js',
-        done: false,
-        isEditing: false},
-      {
-        id:'asdvxvxca',
-        text: 'learn react',
-        done: false,
-        isEditing: false}
-      ]);
+  const [taskList, setTaskList] = useState(JSON.parse(localStorage.getItem('tasklist')) || []);
+  const [loged, setLoged] = useState(false);
  
+  useEffect(() => {
+    localStorage.setItem('tasklist', JSON.stringify(taskList))
+  }, [taskList])   
+
   const addNewTask = (value) =>  {
     setTaskList(taskList.concat(value));
+    // setTaskList((prevValue) => {
+    //   const newTaskList = prevValue.concat(value)
+    //   localStorage.setItem('tasklist', JSON.stringify(newTaskList))
+    //   return newTaskList;
+    //   })
   };
   
   const saveChanges = (value, id) => {
@@ -42,44 +31,58 @@ function App() {
       return item;
     }));
   };
+
+  function loginCheck() {
+    setLoged(!loged)    
+  }
   
   function renderList(){
-    const list = taskList.map((item) => {
-      if (item.isEditing === false){
-        return (
-          <Task 
-            key={item.id}
-            text={item.text}
-            id={item.id} 
-            done={item.done}           
-            taskList={taskList}
-            setTaskList={setTaskList}
-          />);
-      } return (
-          <Edittask 
-            id={item.id} 
-            text={item.text}
-            saveChanges={saveChanges}
-          />);
-    });
-    return list;
+    if(taskList.length === 0) {
+      return <h1>Вы должны добавить новые задачи</h1>
+    }
+      const list = taskList.map((item) => {
+        if (item.isEditing === false){
+          return (
+            <Task 
+              key={item.id}
+              text={item.text}
+              id={item.id} 
+              done={item.done}           
+              taskList={taskList}
+              setTaskList={setTaskList}
+            />);
+        } return (
+            <Edittask 
+              id={item.id} 
+              text={item.text}
+              saveChanges={saveChanges}
+            />);
+      });
+      return list;
   };
-
+  
   console.log(taskList);
-
-  return (
-    <div 
-      className="App container-sm"
-    >
-      <Input                     
-        addNewTas={addNewTask}
-        />
-      <ul 
-        className='container-xs'
+  if (loged === false){
+    return (
+    <Login 
+      loginCheck={loginCheck}
+      loged={loged}
+      setLoged={setLoged}
+    />
+  )} 
+    return (
+      <div 
+        className="App container-sm"
       >
-        {renderList()}
-      </ul>
-    </div>
+        <Input                     
+          addNewTask={addNewTask}
+          />
+        <ul 
+          className='container-xs'
+        >
+          {renderList()}
+        </ul>
+      </div>
   );
 
 }
